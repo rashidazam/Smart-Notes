@@ -288,7 +288,7 @@ function App() {
           <h2>My Notes</h2>
 
           {/* Search mode selector */}
-          <select
+          {/* <select
             aria-label="Search mode"
             value={searchMode}
             onChange={(e) =>
@@ -302,9 +302,9 @@ function App() {
             <option value="semantic">
               Semantic Search
             </option>
-          </select>
+          </select> */}
 
-          {/* Search input */}
+          Search input
           <input
             type="search"
             aria-label="Search notes"

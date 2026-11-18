@@ -1,13 +1,41 @@
-
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import noteRoutes from "./routes/noteRoutes.js";
 
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+
+import { createMcpServer } from "./mcp/mcpServer.js";
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.post("/mcp", async (req, res, next) => {
+  const mcpServer = createMcpServer();
+
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined,
+    enableJsonResponse: true,
+  });
+
+  try {
+    // Connect our MCP tools to the HTTP transport
+    await mcpServer.connect(transport);
+
+    // Let the transport process the MCP message
+    await transport.handleRequest(req, res, req.body);
+  } catch (error) {
+    await mcpServer.close().catch(console.error);
+    next(error);
+    return;
+  }
+
+  res.on("close", () => {
+    mcpServer.close().catch(console.error);
+  });
+});
 
 app.get("/api/health", (req, res) => {
   res.json({

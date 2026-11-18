@@ -1,6 +1,14 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { getAllNotes } from "../services/noteService.js";
+import { z } from "zod";
+import {
+  getAllNotes,
+  getNoteById,
+  createNote,
+  updateNote,
+  deleteNote,
+} from "../services/noteService.js";
+
 
 export function createMcpServer() {
   // Step 1: Create an MCP server
@@ -31,6 +39,137 @@ export function createMcpServer() {
       };
     }
   );
+
+
+server.registerTool(
+  "get_note",
+  {
+    description: "Get a Smart Notes note by its ID",
+    inputSchema: {
+      id: z.string().min(1),
+    },
+  },
+  async ({ id }) => {
+    const note = await getNoteById(id);
+
+    if (!note) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Note with ID ${id} not found`,
+          },
+        ],
+      };
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(note, null, 2),
+        },
+      ],
+    };
+  }
+);
+
+
+server.registerTool(
+  "create_note",
+  {
+    description: "Create a new Smart Notes note",
+    inputSchema: {
+      title: z.string().min(1),
+      content: z.string().min(1),
+    },
+  },
+  async ({ title, content }) => {
+    const note = await createNote({ title, content });
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(note, null, 2),
+        },
+      ],
+    };
+  }
+);
+
+server.registerTool(
+  "update_note",
+  {
+    description: "Update an existing Smart Notes note",
+    inputSchema: {
+      id: z.string().min(1),
+      title: z.string().min(1),
+      content: z.string().min(1),
+    },
+  },
+  async ({ id, title, content }) => {
+    const note = await updateNote(id, { title, content });
+
+    if (!note) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Note with ID ${id} not found`,
+          },
+        ],
+      };
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(note, null, 2),
+        },
+      ],
+    };
+  }
+);
+
+server.registerTool(
+  "delete_note",
+  {
+    description: "Delete a Smart Notes note by ID",
+    inputSchema: {
+      id: z.string().min(1),
+    },
+  },
+  async ({ id }) => {
+    const deleted = await deleteNote(id);
+
+    if (!deleted) {
+      return {
+        isError: true,
+        content: [
+          {
+            type: "text",
+            text: `Note with ID ${id} not found`,
+          },
+        ],
+      };
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Note ${id} deleted successfully`,
+        },
+      ],
+    };
+  }
+);
+
+
 
   return server;
 }

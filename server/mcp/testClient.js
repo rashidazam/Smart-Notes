@@ -11,9 +11,12 @@ const client = new Client({
   version: "1.0.0",
 });
 
-// Step 2: Connect over HTTP
+const MCP_URL =
+  process.env.MCP_URL ||
+  "http://localhost:5000/mcp";
+
 const transport = new StreamableHTTPClientTransport(
-  new URL("http://localhost:5000/mcp")
+  new URL(MCP_URL)
 );
 
 try {

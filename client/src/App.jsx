@@ -304,7 +304,7 @@ function App() {
             </option>
           </select> */}
 
-          Search input
+       
           <input
             type="search"
             aria-label="Search notes"
